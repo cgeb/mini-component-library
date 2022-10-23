@@ -5,69 +5,73 @@ import styled from "styled-components";
 import { COLORS } from "../../constants";
 import VisuallyHidden from "../VisuallyHidden";
 
-const calcRightEdgeRadius = (width) => {
-  if (width < 98) {
-    return 0;
-  }
-  return 4 * ((width - 98) / 2);
-}
-
-const OUTER_STYLES = {
+const STYLES = {
   small: {
-    "--height": 8 + "px",
-    "--border-radius": 4 + "px",
+    height: 8,
+    padding: 0,
+    borderRadius: 4,
   },
   medium: {
-    "--height": 12 + "px",
-    "--border-radius": 4 + "px",
+    height: 12,
+    padding: 0,
+    borderRadius: 4,
   },
   large: {
-    "--height": 24 + "px",
-    "--border-radius": 8 + "px",
+    height: 16,
+    padding: 4,
+    borderRadius: 8,
   },
 };
 
-const INNER_STYLES = {
-  small: {
-    "--height": 8 + "px",
-    "--margin-block": 0,
-  },
-  medium: {
-    "--height": 12 + "px",
-    "--margin-block": 0,
-  },
-  large: {
-    "--height": 16 + "px",
-    "--margin-block": 4 + "px",
-  },
-};
-
-const Outer = styled.div`
+const Wrapper = styled.div`
   background-color: ${COLORS.transparentGray15};
-  width: 100%;
-  border-radius: var(--border-radius);
-  height: var(--height);
-  display: flex;
-  align-items: center;
   box-shadow: inset 0px 2px 4px ${COLORS.transparentGray35};
+  border-radius: var(--border-radius);
+  padding: var(--padding);
 `;
 
-const Inner = styled.div`
-  width: ${p => p.width}%;
+const BarWrapper = styled.div`
+  border-radius: 4px;
+
+  // Trim off corners when progress bar is near full
+  overflow: hidden;
+`;
+
+const Bar = styled.div`
+  width: var(--width);
   background-color: ${COLORS.primary};
-  border-radius: 4px ${p => calcRightEdgeRadius(p.width)}px ${p => calcRightEdgeRadius(p.width)}px 4px;
   height: var(--height);
-  margin: 0 var(--margin-block);
+  border-radius: 4px 0 0 4px;
 `;
 
 const ProgressBar = ({ value, size }) => {
-  const outerStyles = OUTER_STYLES[size];
-  const innerStyles = INNER_STYLES[size];
+  const styles = STYLES[size];
+
+  if (!styles) {
+    throw new Error(`Unknown size passed to ProgressBar: ${size}`);
+  }
 
   return (
-    <Outer style={outerStyles} role="progressbar" aria-valuenow={value}>
-      <Inner style={innerStyles} width={value}></Inner>
-    </Outer>
+    <Wrapper
+      style={{
+        "--padding": styles.padding + "px",
+        "--border-radius": styles.borderRadius + "px",
+      }}
+      role="progressbar"
+      aria-valuenow={value}
+      aria-valuemin="0"
+      aria-valuemax="100"
+    >
+      <VisuallyHidden>{value}%</VisuallyHidden>
+      <BarWrapper>
+        <Bar
+          style={{
+            "--width": value + "%",
+            "--height": styles.height + "px",
+          }}
+        />
+      </BarWrapper>
+    </Wrapper>
   );
 };
 
